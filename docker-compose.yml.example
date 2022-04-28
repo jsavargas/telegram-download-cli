@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  telegram-download-cli:
+    image: jsavargas/telegram-download-cli:beta
+    container_name: telegram-download-cli
+    environment:
+      - APP_ID=
+      - API_HASH=
+      - CHANNELS=-1548273473,-1772151064,-1001136954419
+      - STRING_SESSION=AQCnF----gfBdDdzAQrcrL--BS3-tqvkSxgXhAGPAkAA
+    volumes:
+      - ./config:/config
+      - /mnt/user/download/telegram:/download
+
+# MODO DE USO 
+# APP_ID & API_HASH https://jsavargas.gitbook.io/unraid/telethon-downloader#como-obtener-tg_api_id-tg_api_hash
+#
+# STRING_SESSION docker-compose run --rm telegram-download-cli --session
+#
+# 
+# MODO DE USO 
+# docker-compose run --rm telegram-download-cli -h
+# 
+# 
+# 

@@ -1,0 +1,11 @@
+*~
+*bak
+
+requirements copy.txt
+LEEME.txt
+genstring.py
+docker-compose.yml
+build.sh
+config/downloads.json
+
+config/config.ini

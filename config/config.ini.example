@@ -1,0 +1,9 @@
+[DEFAULT_PATH]
+-1001573 = /download/SERIE X (2022)
+
+[REGEX_DOWNLOAD]
+-1001573 = /SERIE X.*\d{3,4}\.|_\d|_edit/i
+
+[REGEX_RENAME]
+-1001578311130 = /(\d{3})\.({3})/SERIE X - $1.$2/
+
