@@ -11,10 +11,9 @@
 - `BOT_TOKEN` - Get it by contacting to [BotFather](https://t.me/botfather)
 - `APP_ID` - Get it by creating app on [my.telegram.org](https://my.telegram.org/apps)
 - `API_HASH` - Get it by creating app on [my.telegram.org](https://my.telegram.org/apps)
-- `CHANNELS` - List of channel/group usernames, seperated by space.
+- `CHANNELS` - List of channel/group id, seperated by comma. Example "CHANNELS=-10014417,-10014418,-10014419".
 - `STRING_SESSION` - Pyrogram string session. run docker-compose run --rm telegram-download-cli --session
 - `MSG_ID` - Message ID of COUNTS_EDIT_CHANNEL.
-- `CHANNELS` - ID of CHANNELS. Example "CHANNELS=-10014417,-10014418,-10014419".
 
 ### Use 
 ```sh 
