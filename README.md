@@ -2,7 +2,6 @@
 **telegram downloader cli is a program to download files from channels that prevent the forwarding of messages to a bot, allowing the download of files using the personal account via the command line**
 
 
-telegram downloader cli is a program to download files from channels that prevent the forwarding of messages to a bot, allowing the download of files using the personal account via the command line
 
 
 ## Use
