@@ -131,6 +131,9 @@ async def getMedia(channel,f):
 
                 filename, bool_getMedia = isDownloadable(channel, message)
 
+                filename = renameFile(channel,filename)
+
+                print(f'[!] FILENAME RENAME :: [{filename}]')
 
                 if args.download and bool_getMedia and not readjson(message.chat.id, message.message_id) and not os.path.exists(filename) or args.force :
                 #if args.download and bool_getMedia and not os.path.exists(filename) or args.force :
@@ -313,6 +316,31 @@ async def downloadMedia(channel: str, filename: str, message ):
         print(f'Exception downloadMedia :: {e}')
         return False
 
+def renameFile(channel,filename):
+    try:
+        config = read_config_file()
+
+        print(f'renameFile:[{channel}][{filename}]')
+
+        REGEX_RENAME = config['REGEX_RENAME']
+        if str(channel) in REGEX_RENAME:
+
+            m = re.match('/(.*)/(.*)/', REGEX_RENAME[str(channel)])
+            if m:
+
+                #result = re.match(m.group(1), message.caption,re.I)
+
+                _tag_movie_name = re.sub(r"(\d{3})", r"rename \1", filename,count=0, flags=0)
+                print(f'[{m.groups()}] \t=>\t[{_tag_movie_name}]')
+
+            #m = re.search('/(.*)/(.*)', REGEX_DOWNLOAD[str(chat_id)])
+            #if m.group(2) == 'i':
+            #    if re.search(m.group(1), message.video.file_name,re.I): return message.video.file_name,True
+    except Exception as e:
+        print(f'Exception renameFile :: {e}')
+        return filename
+    
+    return filename
 
 # Keep track of the progress while downloading
 def progress(current, total):
@@ -321,19 +349,6 @@ def progress(current, total):
     if ( (int_value) % 5 == 0): 
         print(f"download: {current * 100 / total:.1f}% ", sep='', end='\r', flush=True)
 
-
-
-
-#with xbot:
-#    f = xbot.get_history('AnimesLatinos')
-#
-#
-#
-#    common = await xbot.get_common_chats('me')
-#    print(common)
-#
-#    #for message in f:
-#    #    print(f"\n\n\n >>>>>>>>> [{ message }]")
 
 
 
@@ -373,4 +388,9 @@ if __name__ == '__main__':
         session()
         exit()
     
+
+
+    renameFile('pobrenoviocaps','#PobreNovio _ Capítulo 157 _ Mega_edit.mp4')
+
+
     app.run(main())
