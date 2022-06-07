@@ -9,3 +9,4 @@ build.sh
 config/downloads.json
 
 config/config.ini
+src/bot_session.session

@@ -16,7 +16,8 @@ from tabulate import tabulate
 __version__ = "VERSION 1.0.1"
 
 
-BOT_NAME = os.environ['BOT_NAME']
+OWNER = os.environ['OWNER']
+BOT_TOKEN = os.environ['BOT_TOKEN']
 
 API_HASH = os.environ['API_HASH']
 APP_ID = int(os.environ['APP_ID'])
@@ -35,6 +36,8 @@ JSON_FILENAME = '/config/downloads.json'
 
 # Running bot
 app = Client(api_id=APP_ID, api_hash=API_HASH, session_name=STRING_SESSION)
+
+
 
 print("")
 
@@ -59,10 +62,15 @@ def parse_args():
     parser.add_argument('-b', '--begin-id-message', type=int, help='the begin id message')
     parser.add_argument('-e', '--end-id-message', type=int, help='the end id of sa for destination')
 
+    parser.add_argument('--filename', type=str, help='set filename for download file')
+
     args = parser.parse_args()
     return args
 
-    
+async def botSend(message):
+    async with Client("bot_session",api_id=APP_ID, api_hash=API_HASH,bot_token=BOT_TOKEN) as xbot:
+        await xbot.send_message(OWNER, message)
+
 async def main():
     async with app:
         chat_id = 'verdadesocultascap'
@@ -138,6 +146,7 @@ async def getMedia(channel,f):
                 if args.download and bool_getMedia and not readjson(message.chat.id, message.message_id) and not os.path.exists(filename) or args.force :
                 #if args.download and bool_getMedia and not os.path.exists(filename) or args.force :
                     await downloadMedia(channel, filename, message)
+
     except Exception as e:
         print(f'Exception getMedia :: {e}')
         
@@ -305,8 +314,8 @@ async def downloadMedia(channel: str, filename: str, message ):
         shutil.move(temp_file_path, final_file_path)
         os.chown(final_file_path, int(PUID), int(PGID))
 
-        if BOT_NAME: await app.send_message(BOT_NAME,f"download file: {final_file_path}, {sizeof_fmt(message.video.file_size)}")
-
+        if BOT_TOKEN: await botSend(f"download file: {final_file_path}, {sizeof_fmt(message.video.file_size)}")
+        
         print(f"[+]\tVIDEO FINISH >> [{final_file_path}]")
         writejsondata(message.chat.id, message.message_id)
 
