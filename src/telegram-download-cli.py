@@ -88,7 +88,10 @@ async def main():
 
                 print(f"[*] >>>>>>>>> [{chat.id}][{args.channel}][{chat.title}][{DOWNLOAD_PATH}]")
 
-                f = await app.get_history(ifDIgit(args.channel),limit=args.limit)
+                if args.message_id:
+                    f = await app.get_messages(ifDIgit(args.channel),[args.message_id])
+                else:
+                    f = await app.get_history(ifDIgit(args.channel),limit=args.limit)
 
                 await getMedia(args.channel,f)
 
@@ -134,23 +137,40 @@ async def getMedia(channel,f):
                     file_rename = message.video.file_name
 
 
-                if args.simple: print(f"was downloaded:[{readjson(message.chat.id, message.message_id)}]\tdownloadable:[{isDownloadable(channel, message)[1]}]\t[{message.message_id}]\t[{sizeof_fmt(message.video.file_size)}]\t[{file_rename}]")
-                else: printDetailsMessage(channel,message,DOWNLOAD_PATH)
-
                 filename, bool_getMedia = isDownloadable(channel, message)
+                filename_regex = renameFile(channel,filename)
 
-                filename = renameFile(channel,filename)
+                data = {
+                    'channel': channel,
+                    'message': message,
+                    'DOWNLOAD_PATH': DOWNLOAD_PATH,
+                    'filename': filename,
+                    'filename_regex': filename_regex,
+                    'isDownloadable': bool_getMedia 
+                }
 
-                print(f'[!] FILENAME RENAME :: [{filename}]')
+                if args.simple: print(f"was downloaded:[{readjson(message.chat.id, message.message_id)}]\tdownloadable:[{bool_getMedia}]\t[{message.message_id}]\t[{sizeof_fmt(message.video.file_size)}]\t[{file_rename}]")
+                else: printDetailsMessage(data)
 
+
+                print(f'[!] FILENAME RENAME :: [{filename}] => [{filename_regex}]')
+            
                 if args.download and bool_getMedia and not readjson(message.chat.id, message.message_id) and not os.path.exists(filename) or args.force :
                 #if args.download and bool_getMedia and not os.path.exists(filename) or args.force :
-                    await downloadMedia(channel, filename, message)
+                    await downloadMedia(channel, filename_regex, message)
 
     except Exception as e:
         print(f'Exception getMedia :: {e}')
         
-def printDetailsMessage(channel,message,DOWNLOAD_PATH):
+def printDetailsMessage(data):
+    # channel,message,DOWNLOAD_PATH
+    channel = data['channel']
+    message = data['message']
+    DOWNLOAD_PATH = data['DOWNLOAD_PATH']
+    isDownloadable = data['isDownloadable']
+    filename = data['filename']
+    filename_regex = data['filename_regex']
+
     print(
 f''' 
 -------------------------------------------------
@@ -167,8 +187,9 @@ f'''
 +   file_size: {sizeof_fmt(message.video.file_size)}
 +   download path: {DOWNLOAD_PATH}
 +   was downloaded: {readjson(message.chat.id, message.message_id)}
-+   it is downloadable: {isDownloadable(channel, message)[1]}
-+   fileOutput: {isDownloadable(channel, message)[0]}
++   it is downloadable: {isDownloadable}
++   filename: {filename}
++   fileOutput: {filename_regex}
 -------------------------------------------------
 ''')
 
@@ -312,7 +333,9 @@ async def downloadMedia(channel: str, filename: str, message ):
         print(f"\n ---->\tmove to: {final_file_path}")
         os.makedirs(DOWNLOAD_PATH, exist_ok=True)
         shutil.move(temp_file_path, final_file_path)
+        
         os.chown(final_file_path, int(PUID), int(PGID))
+        os.chmod(final_file_path, 0o666)
 
         if BOT_TOKEN: await botSend(f"download file: {final_file_path}, {sizeof_fmt(message.video.file_size)}")
         
@@ -336,12 +359,13 @@ def renameFile(channel,filename):
 
             m = re.match('/(.*)/(.*)/', REGEX_RENAME[str(channel)])
             if m:
+                filename_rename = re.sub(m.group(1), m.group(2), filename)
 
-                #result = re.match(m.group(1), message.caption,re.I)
+                print(f'  >>>>>>> [{m.groups()}] \t=>\t[{filename_rename}]')
 
-                _tag_movie_name = re.sub(r"(\d{3})", r"rename \1", filename,count=0, flags=0)
-                print(f'[{m.groups()}] \t=>\t[{_tag_movie_name}]')
+                return filename_rename
 
+                #time.sleep(10)
             #m = re.search('/(.*)/(.*)', REGEX_DOWNLOAD[str(chat_id)])
             #if m.group(2) == 'i':
             #    if re.search(m.group(1), message.video.file_name,re.I): return message.video.file_name,True
@@ -399,7 +423,10 @@ if __name__ == '__main__':
     
 
 
-    renameFile('pobrenoviocaps','#PobreNovio _ Capítulo 157 _ Mega_edit.mp4')
+
+
+    #renameFile('Traicionada_MEGA','Asya es vinculada a una relación (Capítulo 43).mp4')
+    #exit()
 
 
     app.run(main())
