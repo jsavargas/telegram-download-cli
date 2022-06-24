@@ -7,7 +7,7 @@ import argparse
 import configparser
 import shutil
 import re
-
+import pdb
 
 from pyrogram import Client
 from pyrogram.errors import FloodWait
@@ -59,6 +59,9 @@ def parse_args():
     parser.add_argument('--simple', action='store_true', default=False, help='show less details')
     parser.add_argument('-f','--force', action='store_true', default=False, help='show less details')
 
+    parser.add_argument('--download-path', type=str, help='set path for download files')
+
+
     parser.add_argument('-b', '--begin-id-message', type=int, help='the begin id message')
     parser.add_argument('-e', '--end-id-message', type=int, help='the end id of sa for destination')
 
@@ -84,6 +87,7 @@ async def main():
             DOWNLOAD_PATH = getDownloadPath(args.channel)
             try:
 
+                #pdb.set_trace()
                 chat = await app.get_chat(ifDIgit(args.channel))
 
                 print(f"[*] >>>>>>>>> [{chat.id}][{args.channel}][{chat.title}][{DOWNLOAD_PATH}]")
@@ -128,6 +132,8 @@ async def getMedia(channel,f):
         for message in f:
             if message.media == "video":
 
+                #pdb.set_trace()
+
                 if not message.video.file_name or args.caption:
 
                     file_rename = f"{message.caption}.{(message.video.mime_type).split('/')[1]}"
@@ -149,9 +155,11 @@ async def getMedia(channel,f):
                     'isDownloadable': bool_getMedia 
                 }
 
-                if args.simple: print(f"was downloaded:[{readjson(message.chat.id, message.message_id)}]\tdownloadable:[{bool_getMedia}]\t[{message.message_id}]\t[{sizeof_fmt(message.video.file_size)}]\t[{file_rename}]")
-                else: printDetailsMessage(data)
+                if args.caption:
+                    filename_regex = f"{message.caption.replace('/','-')}.{(message.video.mime_type).split('/')[1]}"
 
+                if args.simple: print(f"was downloaded:[{readjson(message.chat.id, message.message_id)}]\tdownloadable:[{bool_getMedia}]\t[{message.message_id}]\t[{sizeof_fmt(message.video.file_size)}]\t[{filename_regex}]")
+                else: printDetailsMessage(data)
 
                 print(f'[!] FILENAME RENAME :: [{filename}] => [{filename_regex}]')
             
@@ -226,6 +234,10 @@ def normalizedChannels(channels):
 def getDownloadPath(channel):
     config = read_config_file()
     folderFlag=False
+
+    if args.download_path:
+        return args.download_path
+    
 
     DEFAULT_PATH = config['DEFAULT_PATH']
     for ID in DEFAULT_PATH:
@@ -325,6 +337,8 @@ async def downloadMedia(channel: str, filename: str, message ):
 
         temp_file_path = os.path.join(DOWNLOAD_TEMP_PATH,filename)
         final_file_path = os.path.join(DOWNLOAD_PATH,filename)
+
+        print(f'[+] FILE DOWNLOAD :: [{filename}] => [{final_file_path}]')
 
         print(f" ---->\tdownload in: {temp_file_path}")
 
