@@ -35,7 +35,7 @@ PATH_CONFIG = '/config/config.ini'
 JSON_FILENAME = '/config/downloads.json'
 
 # Running bot
-app = Client(api_id=APP_ID, api_hash=API_HASH, session_name=STRING_SESSION)
+app = Client("my_account", api_id=APP_ID, api_hash=API_HASH)
 
 
 
@@ -95,9 +95,14 @@ async def main():
                 if args.message_id:
                     f = await app.get_messages(ifDIgit(args.channel),[args.message_id])
                 else:
-                    f = await app.get_history(ifDIgit(args.channel),limit=args.limit)
+                    #f = await app.get_history(ifDIgit(args.channel),limit=args.limit)
+                    async for message in app.get_chat_history(ifDIgit(args.channel),limit=args.limit):
+                        #print(message)
+                        print(f" >>>>>>>>>>>>>>>>>>>>> [{message.id}]")
+                        await getMedia(args.channel,message)
+                        #pdb.set_trace()
 
-                await getMedia(args.channel,f)
+                #await getMedia(args.channel,f)
 
             except Exception as e:
                 print(f'except main {e}')
@@ -125,47 +130,49 @@ async def main():
                     print(f'except {e}')
                     break
 
-async def getMedia(channel,f):
+async def getMedia(channel,message):
     try:
         DOWNLOAD_PATH = getDownloadPath(channel)
 
-        for message in f:
-            if message.media == "video":
+        print(f"message.media::[{message.media}]")
+        #pdb.set_trace()
+        if str(message.media) == "MessageMediaType.VIDEO":
 
-                #pdb.set_trace()
+            #pdb.set_trace()
 
-                if not message.video.file_name or args.caption:
+            if not message.video.file_name or args.caption:
 
-                    file_rename = f"{message.caption}.{(message.video.mime_type).split('/')[1]}"
+                file_rename = f"{message.caption}.{(message.video.mime_type).split('/')[1]}"
 
-                else:
-                    
-                    file_rename = message.video.file_name
+            else:
+                
+                file_rename = message.video.file_name
 
 
-                filename, bool_getMedia = isDownloadable(channel, message)
-                filename_regex = renameFile(channel,filename)
+            filename, bool_getMedia = isDownloadable(channel, message)
+            filename_regex = renameFile(channel,filename)
 
-                data = {
-                    'channel': channel,
-                    'message': message,
-                    'DOWNLOAD_PATH': DOWNLOAD_PATH,
-                    'filename': filename,
-                    'filename_regex': filename_regex,
-                    'isDownloadable': bool_getMedia 
-                }
+            data = {
+                'channel': channel,
+                'message': message,
+                'DOWNLOAD_PATH': DOWNLOAD_PATH,
+                'filename': filename,
+                'filename_regex': filename_regex,
+                'isDownloadable': bool_getMedia 
+            }
 
-                if args.caption:
-                    filename_regex = f"{message.caption.replace('/','-')}.{(message.video.mime_type).split('/')[1]}"
+            if args.caption:
+                filename_regex = f"{message.caption.replace('/','-')}.{(message.video.mime_type).split('/')[1]}"
 
-                if args.simple: print(f"was downloaded:[{readjson(message.chat.id, message.message_id)}]\tdownloadable:[{bool_getMedia}]\t[{message.message_id}]\t[{sizeof_fmt(message.video.file_size)}]\t[{filename_regex}]")
-                else: printDetailsMessage(data)
+            #pdb.set_trace()
+            if args.simple: print(f"was downloaded:[{readjson(message.chat.id, message.id)}]\tdownloadable:[{bool_getMedia}]\t[{message.id}]\t[{sizeof_fmt(message.video.file_size)}]\t[{filename_regex}]")
+            else: printDetailsMessage(data)
 
-                print(f'[!] FILENAME RENAME :: [{filename}] => [{filename_regex}]')
-            
-                if args.download and bool_getMedia and not readjson(message.chat.id, message.message_id) and not os.path.exists(filename) or args.force :
-                #if args.download and bool_getMedia and not os.path.exists(filename) or args.force :
-                    await downloadMedia(channel, filename_regex, message)
+            print(f'[!] FILENAME RENAME :: [{filename}] => [{filename_regex}]')
+        
+            if args.download and bool_getMedia and not readjson(message.chat.id, message.id) and not os.path.exists(filename) or args.force :
+            #if args.download and bool_getMedia and not os.path.exists(filename) or args.force :
+                await downloadMedia(channel, filename_regex, message)
 
     except Exception as e:
         print(f'Exception getMedia :: {e}')
@@ -186,7 +193,7 @@ f'''
 +   chat id: {message.chat.id}
 +   chat username: {message.chat.username}
 +   chat title: {message.chat.title}
-+   message_id: {message.message_id}
++   message_id: {message.id}
 +   media type: {message.media}
 +   resolution: {message.video.width}x{message.video.height}
 +   mime_type: {(message.video.mime_type).split('/')[1]}
@@ -194,7 +201,7 @@ f'''
 +   caption: {message.caption}
 +   file_size: {sizeof_fmt(message.video.file_size)}
 +   download path: {DOWNLOAD_PATH}
-+   was downloaded: {readjson(message.chat.id, message.message_id)}
++   was downloaded: {readjson(message.chat.id, message.id)}
 +   it is downloadable: {isDownloadable}
 +   filename: {filename}
 +   fileOutput: {filename_regex}
@@ -354,7 +361,7 @@ async def downloadMedia(channel: str, filename: str, message ):
         if BOT_TOKEN: await botSend(f"download file: {final_file_path}, {sizeof_fmt(message.video.file_size)}")
         
         print(f"[+]\tVIDEO FINISH >> [{final_file_path}]")
-        writejsondata(message.chat.id, message.message_id)
+        writejsondata(message.chat.id, message.id)
 
         return True
 
@@ -407,7 +414,7 @@ def session():
     #api_id = input("Enter Your APP ID: ")
     #api_hash = input("Enter Your API HASH: ")
 
-    with Client("IDN-Coder-X", api_id=int(APP_ID), api_hash=API_HASH) as xbot:
+    with Client("my_account", api_id=int(APP_ID), api_hash=API_HASH) as xbot:
         ssession = f'**String Session**:\n - STRING_SESSION={xbot.export_session_string()}'
         print(f'Your string session has been stored to your saved message => {ssession}')
         xbot.send_message('me', ssession)
